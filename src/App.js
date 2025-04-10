@@ -13,6 +13,7 @@ function App() {
       setSelectedItem((prev) => prev.filter((i) => i.name !== item.name));
     }
   };
+  console.log(selectedItem);
 
   const courierCharge = (weight) => {
     if (weight <= 200) return 5;
@@ -32,11 +33,26 @@ function App() {
 
     const sorted = [...selectedItem].sort((a, b) => a.price - b.price);
 
+    //handle single item edge case
+    if (sorted.length === 1) {
+      const item = sorted[0];
+      packed.push({
+        name: [item.name],
+        price: item.price,
+        weight: item.weight,
+        courierCharge: courierCharge(item.weight),
+      });
+      setOrder(packed);
+      return;
+    }
+
     for (const item of sorted) {
       // check if adding current item price exceeds price limit, store current package and start a new one
       if (currentPackage.price + item.price > maxPricePerPackage) {
         currentPackage.courierCharge = courierCharge(currentPackage.weight);
         packed.push({ ...currentPackage });
+
+        //  reset currentCharge
         currentPackage = {
           name: [],
           price: 0,
@@ -44,15 +60,19 @@ function App() {
         };
       }
 
-      //
       currentPackage.name.push(item.name);
       currentPackage.price += item.price;
       currentPackage.weight += item.weight;
+
+      console.log("currentPackage1: ", currentPackage);
     }
-    setOrder(packed);
+
     console.log("sorted: ", sorted);
     console.log("package: ", packed);
     console.log("order: ", order);
+    console.log("currentPackage1: ", currentPackage);
+
+    setOrder(packed);
   };
 
   return (
@@ -63,7 +83,7 @@ function App() {
       </h2>
 
       {/* list of products */}
-      <div className="  space-y-2 font-serif flex flex-col justify-center items-center">
+      <div className="space-y-2 max-h-96 overflow-y-auto font-serif flex flex-col justify-center items-center">
         {products.map((item, i) => (
           <div
             key={i}
@@ -94,12 +114,12 @@ function App() {
 
       {/* render Order */}
       {order.length > 0 && (
-        <div className=" space-y-2 overflow-scroll">
+        <div className=" space-y-2 w-full mx-auto">
           <h2>This order has following packages:</h2>
           {order.map((item, i) => (
             <div key={i}>
-              <h2 className=" font-semibold">Packages</h2>
-              <p>name: {item.name.join(", ")}</p>
+              <h2 className=" font-semibold">Packages {i + 1}</h2>
+              <p>name: {item.name > 0 ? item.name.join(", ") : item.name}</p>
               <p>Total Price: ${item.price}</p>
               <p>Total Weight: ${item.weight}</p>
               <p>Total Weight: ${item.courierCharge}</p>
