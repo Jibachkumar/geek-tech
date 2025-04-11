@@ -6,6 +6,7 @@ function App() {
   const [selectedItem, setSelectedItem] = useState([]);
   const [order, setOrder] = useState([]);
 
+  // handle checkbox
   const toggleItem = (item, e) => {
     if (e.target.checked) {
       setSelectedItem((prev) => [...prev, item]);
@@ -13,7 +14,6 @@ function App() {
       setSelectedItem((prev) => prev.filter((i) => i.name !== item.name));
     }
   };
-  console.log(selectedItem);
 
   const courierCharge = (weight) => {
     if (weight <= 200) return 5;
@@ -21,6 +21,7 @@ function App() {
     if (weight <= 1000) return 15;
     return 20;
   };
+
   const handleOrder = () => {
     const maxPricePerPackage = 250;
     let packed = [];
@@ -31,6 +32,7 @@ function App() {
       courierCharge: 0,
     };
 
+    // sorted descending
     const sorted = [...selectedItem].sort((a, b) => a.price - b.price);
 
     //handle single item edge case
@@ -63,15 +65,13 @@ function App() {
       currentPackage.name.push(item.name);
       currentPackage.price += item.price;
       currentPackage.weight += item.weight;
-
-      console.log("currentPackage1: ", currentPackage);
     }
 
-    console.log("sorted: ", sorted);
-    console.log("package: ", packed);
-    console.log("order: ", order);
-    console.log("currentPackage1: ", currentPackage);
-
+    //remaining last item less than price exceeds which is still at currentPage not in packed
+    if (currentPackage.name.length > 0) {
+      currentPackage.courierCharge = courierCharge(currentPackage.weight);
+      packed.push({ ...currentPackage });
+    }
     setOrder(packed);
   };
 
@@ -96,7 +96,7 @@ function App() {
               <input
                 type="checkbox"
                 onChange={(e) => toggleItem(item, e)}
-                checked={selectedItem.includes(item)}
+                checked={selectedItem.some((i) => i.name === item.name)}
               />
             </div>
             <p>Price: {item.price}</p>
